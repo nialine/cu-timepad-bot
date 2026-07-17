@@ -12,7 +12,7 @@ services:
       - mongodb
 
   mongodb:
-    image: mongo:latest
+    image: dburszty/mongodb-raspberrypi:7.0.14
     container_name: cu-timepad-bot-mongodb
     restart: always
     environment:

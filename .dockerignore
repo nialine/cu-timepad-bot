@@ -1,5 +1,7 @@
 .git
 .github
 
+docker-compose*
+
 .env*
 README.md

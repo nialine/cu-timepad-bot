@@ -62,6 +62,16 @@ func main() {
 
 	mongo_opts := options.Client().ApplyURI(cfg.MongoURI)
 	client, err := mongo.Connect(mongo_opts)
+	if err != nil {
+		slog.LogAttrs(
+			ctx,
+			slog.LevelError,
+			"Can't connect to mongodb",
+			slog.Any("error", err.Error()),
+			slog.String("mongodb_uri", cfg.MongoURI),
+		)
+		os.Exit(1)
+	}
 	st := store.New(ctx, client)
 	h := handler.New(st)
 
