@@ -9,6 +9,8 @@ services:
       - PROXY_URL=${PROXY_URL}
     depends_on:
       - mongodb
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   mongodb:
     image: dburszty/mongodb-raspberrypi:7.0.14
