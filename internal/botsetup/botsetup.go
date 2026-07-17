@@ -86,6 +86,8 @@ func Handle(ctx context.Context, h handler.Handler) (*bot.Bot, error) {
 		go func() {
 			http.ListenAndServe(":80", b.WebhookHandler())
 		}()
+	} else {
+		b.DeleteWebhook(ctx, nil)
 	}
 
 	b.RegisterHandler(bot.HandlerTypeMessageText, "/start", bot.MatchTypeExact, h.Start)
