@@ -49,6 +49,7 @@ func (h *Handler) writeError(ctx context.Context, b *bot.Bot, update *models.Upd
 func (h *Handler) defaultData(update *models.Update) map[string]any {
 	return map[string]any{
 		"chatid":        update.Message.Chat.ID,
+		"message_text":  update.Message.Text,
 		"first_name_tg": update.Message.Chat.FirstName,
 		"last_name_tg":  update.Message.Chat.LastName,
 		"time":          time.Now(),
