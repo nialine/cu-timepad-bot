@@ -3,7 +3,8 @@ name: CI/CD Docker Compose Deploy
 on:
   push:
     branches:
-      - main
+      - master
+  
 
 env:
   REGISTRY: ghcr.io
