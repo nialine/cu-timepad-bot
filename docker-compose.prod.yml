@@ -1,12 +1,10 @@
-version: '3.8'
-
 services:
   app:
     image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/${IMAGE_NAME}:latest
     container_name: cu-timepad-bot-app
     restart: always
     environment:
-      - MONGO_URI=mongodb://root:${MONGODB_PASSWORD}@mongodb:27017/
+      - MONGODB=mongodb://root:${MONGODB_PASSWORD}@mongodb:27017/
       - BOT_TOKEN=${BOT_TOKEN}
     depends_on:
       - mongodb
