@@ -16,6 +16,8 @@ type EnvConfig struct {
 	LogLevel       string `env:"LOG_LEVEL" envDefault:"warn"`
 	MongoURI       string `env:"MONGODB"`
 	DBName         string `env:"MONGO_DBNAME" envDefault:"timepad-bot"`
+
+	PROXYURL string `env:"PROXY_URL"`
 }
 
 type YamlConfig struct {
