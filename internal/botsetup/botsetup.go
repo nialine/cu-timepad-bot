@@ -14,6 +14,8 @@ import (
 	"golang.org/x/net/proxy"
 )
 
+const pollTimeout = 25 * time.Second
+
 func Handle(ctx context.Context, h handler.Handler) (*bot.Bot, error) {
 	cfg, _ := config.GetConfig(ctx)
 	bot_opts := []bot.Option{
@@ -64,7 +66,7 @@ func Handle(ctx context.Context, h handler.Handler) (*bot.Bot, error) {
 			Transport: transport,
 		}
 
-		bot_opts = append(bot_opts, bot.WithHTTPClient(10*time.Second, client))
+		bot_opts = append(bot_opts, bot.WithHTTPClient(pollTimeout, client))
 	}
 	b, err := bot.New(cfg.BotToken, bot_opts...)
 	if err != nil {
