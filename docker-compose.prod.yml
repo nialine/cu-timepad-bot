@@ -5,13 +5,12 @@ services:
     restart: unless-stopped
     ports:
       - "42888:80"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     environment:
       - MONGODB=mongodb://root:${MONGODB_PASSWORD}@mongodb:27017/
       - BOT_TOKEN=${BOT_TOKEN}
       - PROXY_URL=${PROXY_URL}
       - WEBHOOK_URL=${WEBHOOK_URL}
+      - LOG_LEVEL=${LOG_LEVEL}
     depends_on:
       - mongodb
       - xray

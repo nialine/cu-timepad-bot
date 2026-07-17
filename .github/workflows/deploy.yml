@@ -71,6 +71,7 @@ jobs:
           WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
           XRAY_CONFIG: ${{ secrets.XRAY_CONFIG }}
           PROXY_URL: ${{ vars.PROXY_URL }}
+          LOG_LEVEL: ${{ vars.LOG_LEVEL }}
         run: |
           # Create xray config
           echo "$XRAY_CONFIG" > ./xray.conf
