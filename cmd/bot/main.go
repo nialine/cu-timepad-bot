@@ -87,7 +87,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	go b.Start(ctx)
+	if cfg.WebhookURL == "" {
+		go b.Start(ctx)
+	} else {
+		go b.StartWebhook(ctx)
+	}
+
 	slog.LogAttrs(
 		ctx,
 		slog.LevelInfo,

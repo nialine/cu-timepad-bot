@@ -68,9 +68,24 @@ func Handle(ctx context.Context, h handler.Handler) (*bot.Bot, error) {
 
 		bot_opts = append(bot_opts, bot.WithHTTPClient(pollTimeout, client))
 	}
+
 	b, err := bot.New(cfg.BotToken, bot_opts...)
 	if err != nil {
 		return nil, err
+	}
+
+	if cfg.WebhookURL != "" {
+		slog.LogAttrs(ctx,
+			slog.LevelWarn,
+			"Using webhook",
+			slog.String("webhook_url", cfg.WebhookURL),
+		)
+		b.SetWebhook(ctx, &bot.SetWebhookParams{
+			URL: cfg.WebhookURL,
+		})
+		go func() {
+			http.ListenAndServe(":80", b.WebhookHandler())
+		}()
 	}
 
 	b.RegisterHandler(bot.HandlerTypeMessageText, "/start", bot.MatchTypeExact, h.Start)

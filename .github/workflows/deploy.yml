@@ -68,6 +68,7 @@ jobs:
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           MONGODB_PASSWORD: ${{ secrets.MONGODB_PASSWORD }}
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
           PROXY_URL: ${{ vars.PROXY_URL }}
         run: |
           # Pull down the newly pushed app image from GHCR

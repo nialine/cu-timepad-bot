@@ -7,6 +7,7 @@ services:
       - MONGODB=mongodb://root:${MONGODB_PASSWORD}@mongodb:27017/
       - BOT_TOKEN=${BOT_TOKEN}
       - PROXY_URL=${PROXY_URL}
+      - WEBHOOK_URL=${WEBHOOK_URL}
     depends_on:
       - mongodb
     extra_hosts:

@@ -13,9 +13,12 @@ type Config struct {
 type EnvConfig struct {
 	TelegramAPIURL string `env:"TELEGRAM_API_URL"`
 	BotToken       string `env:"BOT_TOKEN,required"`
-	LogLevel       string `env:"LOG_LEVEL" envDefault:"warn"`
-	MongoURI       string `env:"MONGODB"`
-	DBName         string `env:"MONGO_DBNAME" envDefault:"timepad-bot"`
+	WebhookURL     string `env:"WEBHOOK_URL"`
+
+	LogLevel string `env:"LOG_LEVEL" envDefault:"warn"`
+
+	MongoURI string `env:"MONGODB"`
+	DBName   string `env:"MONGO_DBNAME" envDefault:"timepad-bot"`
 
 	PROXYURL string `env:"PROXY_URL"`
 }
