@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/go-telegram/bot"
+	"golang.org/x/net/proxy"
 )
 
 func Handle(ctx context.Context, h handler.Handler) (*bot.Bot, error) {
@@ -25,14 +26,38 @@ func Handle(ctx context.Context, h handler.Handler) (*bot.Bot, error) {
 		proxyURL, err := url.Parse(cfg.PROXYURL)
 		if err != nil {
 			slog.LogAttrs(ctx,
-				slog.LevelWarn,
-				"Ignoring invalid setting proxy",
+				slog.LevelError,
+				"Invalid proxy",
 				slog.Any("error", err),
 				slog.String("proxy_url", cfg.PROXYURL),
 			)
+			return nil, err
 		}
+
+		dialer, err := proxy.FromURL(proxyURL, proxy.Direct)
+		if err != nil {
+			slog.LogAttrs(ctx,
+				slog.LevelError,
+				"Can't create dialer",
+				slog.Any("error", err),
+				slog.String("proxy_url", cfg.PROXYURL),
+			)
+			return nil, err
+		}
+
+		contextDialer, ok := dialer.(proxy.ContextDialer)
+		if !ok {
+			slog.LogAttrs(ctx,
+				slog.LevelError,
+				"Dialer does not support contextDialer",
+				slog.Any("error", err),
+				slog.String("proxy_url", cfg.PROXYURL),
+			)
+			return nil, err
+		}
+
 		transport := &http.Transport{
-			Proxy: http.ProxyURL(proxyURL),
+			DialContext: contextDialer.DialContext,
 		}
 
 		client := &http.Client{
