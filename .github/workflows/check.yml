@@ -21,9 +21,10 @@ jobs:
 
       - name: Run Go Format Check
         run: |
-          if [ -n "$(gofmt -l .)" ]; then
+          unformatted="$(gofmt -l .)"
+          if [ -n "$unformatted" ]; then
             echo "The following files are not formatted properly:"
-            gofmt -l .
+            echo "$unformatted"
             exit 1
           fi
 
