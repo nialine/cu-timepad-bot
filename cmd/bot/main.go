@@ -60,7 +60,7 @@ func main() {
 	defer cancel()
 	ctx = config.InjectConfig(ctx, cfg)
 
-	mongo_opts := options.Client().ApplyURI(cfg.MongoURI).SetTimeout(1 * time.Second)
+	mongo_opts := options.Client().ApplyURI(cfg.MongoURI)
 	client, err := mongo.Connect(mongo_opts)
 	if err != nil {
 		slog.LogAttrs(
@@ -77,9 +77,8 @@ func main() {
 		slog.LogAttrs(
 			ctx,
 			slog.LevelError,
-			"Can't connect to mongodb",
-			slog.Any("error", err.Error()),
-			slog.String("mongodb_uri", cfg.MongoURI),
+			"MongoDB ping failed",
+			slog.Any("error", err),
 		)
 		os.Exit(1)
 	}
