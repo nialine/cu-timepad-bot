@@ -19,7 +19,11 @@ const pollTimeout = 25 * time.Second
 func Handle(ctx context.Context, h handler.Handler) (*bot.Bot, error) {
 	cfg, _ := config.GetConfig(ctx)
 	bot_opts := []bot.Option{
-		bot.WithMiddlewares(middleware.Logging),
+		bot.WithMiddlewares(
+			middleware.SingleFlight,
+			middleware.Logging,
+			middleware.AutoRespond,
+		),
 	}
 	if cfg.TelegramAPIURL != "" {
 		bot_opts = append(bot_opts, bot.WithServerURL(cfg.TelegramAPIURL))
