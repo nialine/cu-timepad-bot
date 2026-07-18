@@ -139,7 +139,6 @@ func initConfig(ctx context.Context) (*config.Config, error) {
 			".env not found",
 			slog.String("error", err.Error()),
 		)
-		return nil, err
 	}
 	cfg, err := config.Load()
 	if err != nil {
@@ -174,7 +173,7 @@ func initMongoClient(ctx context.Context) (*mongo.Client, error) {
 			slog.Any("error", err.Error()),
 			slog.String("mongodb_uri", cfg.MongoURI),
 		)
-		os.Exit(1)
+		return nil, err
 	}
 
 	ctx_ping, cancel := context.WithTimeout(ctx, 5*time.Second)

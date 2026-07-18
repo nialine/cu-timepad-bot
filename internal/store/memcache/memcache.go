@@ -35,7 +35,9 @@ func (st *MemCacheStore[T]) AddUser(ctx context.Context, userid int64) error {
 	user := &domain.User{
 		ID: userid,
 	}
-	st.Store.AddUser(ctx, userid)
+	if err := st.Store.AddUser(ctx, userid); err != nil {
+		return err
+	}
 	st.memCache.Add(cacheUserID(userid), user, cache.DefaultExpiration)
 	return nil
 }

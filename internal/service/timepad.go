@@ -44,9 +44,10 @@ func (h *Service) processTimepadEvents(ctx context.Context, client *timepad.Clie
 	g, gctx := errgroup.WithContext(ctx)
 
 	for _, ev := range cfg.Events {
+		ev := ev
 		g.Go(func() error {
 			err := h.processEvent(gctx, client, ev)
-			if err != nil {
+			if err == nil {
 				slog.LogAttrs(ctx,
 					slog.LevelDebug,
 					"Event processed",

@@ -50,9 +50,9 @@ func (h *Service) processNotifyPeople(ctx context.Context, b *bot.Bot, new_event
 	users := h.st.FindUsersWithEvent(ctx, new_events.Event.ID)
 
 	for _, user := range users {
+		user := user
 		g.Go(func() error {
-			err := h.sendNotification(gctx, b, user.ID, new_events)
-			return err
+			return h.sendNotification(gctx, b, user.ID, new_events)
 		})
 	}
 

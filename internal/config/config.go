@@ -18,8 +18,7 @@ type Config struct {
 
 	MongoURI         string `env:"MONGODB"`
 	DBName           string `env:"MONGO_DBNAME" envDefault:"timepad-bot"`
-	MemCacheDuration int    `env:"MEMCACHE_DURATION envDefault:300"`
-
+	MemCacheDuration int    `env:"MEMCACHE_DURATION" envDefault:"300"`
 	PROXYURL string `env:"PROXY_URL"`
 
 	Events               []domain.Event `yaml:"events"`
@@ -35,7 +34,7 @@ func Load() (Config, error) {
 
 	err := env.Parse(&cfg)
 	if err != nil {
-		return cfg, nil
+		return cfg, err
 	}
 
 	f, err := os.OpenFile("config.yaml", os.O_RDONLY, 0)

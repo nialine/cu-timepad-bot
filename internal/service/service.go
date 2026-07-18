@@ -68,13 +68,13 @@ func (s *Service) ProcessEventCallback(ctx context.Context, userid int64, callba
 			userid,
 			domain.EventID(eventid),
 		)
-		status = "subscribed"
+		status = "unsubscribed"
 	} else {
 		err = s.AddUserSubscribedEvent(ctx,
 			userid,
 			domain.EventID(eventid),
 		)
-		status = "unsubscribed"
+		status = "subscribed"
 	}
 	if err != nil {
 		return err

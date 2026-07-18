@@ -121,7 +121,10 @@ func (h *Handler) ShowEventsCallback(ctx context.Context, b *bot.Bot, update *mo
 	userid := update.CallbackQuery.Message.Message.Chat.ID
 
 	if len(callbackData) > 1 {
-		h.svc.ProcessEventCallback(ctx, userid, callbackData)
+		if err := h.svc.ProcessEventCallback(ctx, userid, callbackData); err != nil {
+			h.writeError(ctx, b, update, err)
+			return
+		}
 	}
 
 	kb := &models.InlineKeyboardMarkup{
