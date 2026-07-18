@@ -1,6 +1,13 @@
 package timepad
 
-import "time"
+import (
+	"errors"
+	"time"
+)
+
+var (
+	ErrParse = errors.New("Can't parse event")
+)
 
 type Event struct {
 	ID              int              `json:"id"`
@@ -10,9 +17,13 @@ type Event struct {
 }
 
 type RecurringEvent struct {
-	ID          int       `json:"id"`
-	Time        time.Time `json:"date_iso8601"`
-	TicketsLeft *int      `json:"tickets_left"`
-	Unavailable bool      `json:"unavaliable"`
-	IsCurrent   bool      `json:"isCurrent"`
+	ID   int       `json:"id"`
+	Time time.Time `json:"date_iso8601"`
+
+	Date  string `json:"date"`
+	DateH string `json:"date_h"`
+
+	TicketsLeft *int `json:"tickets_left"`
+	Unavailable bool `json:"unavaliable"`
+	IsCurrent   bool `json:"isCurrent"`
 }

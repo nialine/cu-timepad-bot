@@ -1,0 +1,7 @@
+<b>📊 CU Timepad Bot</b>
+
+Бот для отслеживания доступных слотов в Timepad ЦУ
+Roadmap (будущие фичи):
+- Запись через бота
+
+<i>Исходный код доступен <a href="https://github.com/nialine/cu-timepad-bot">здесь</a></i>

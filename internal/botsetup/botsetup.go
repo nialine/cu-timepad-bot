@@ -17,13 +17,14 @@ import (
 const pollTimeout = 25 * time.Second
 
 func Handle(ctx context.Context, h handler.Handler) (*bot.Bot, error) {
-	cfg, _ := config.GetConfig(ctx)
+	cfg := config.GetConfig(ctx)
 	bot_opts := []bot.Option{
 		bot.WithMiddlewares(
 			middleware.SingleFlight,
 			middleware.Logging,
 			middleware.AutoRespond,
 		),
+		bot.WithCallbackQueryDataHandler("", bot.MatchTypePrefix, h.CallbackHandler),
 	}
 	if cfg.TelegramAPIURL != "" {
 		bot_opts = append(bot_opts, bot.WithServerURL(cfg.TelegramAPIURL))
