@@ -8,9 +8,8 @@ services:
     environment:
       - MONGODB=mongodb://root:${MONGODB_PASSWORD}@mongodb:27017/
       - BOT_TOKEN=${BOT_TOKEN}
-      - PROXY_URL=${PROXY_URL}
-      - WEBHOOK_URL=${WEBHOOK_URL}
       - LOG_LEVEL=${LOG_LEVEL}
+      - PROXY_URL=${PROXY_URL}
     depends_on:
       - mongodb
       - xray
@@ -31,9 +30,8 @@ services:
     restart: unless-stopped
     volumes:
       - "./xray.conf:/etc/xray/config.json"
-      - "./geoip.dat:/usr/share/xray/geoip.dat"
-      - "./geosite.dat:/usr/share/xray/geosite.dat"
 
 volumes:
   mongo_data:
     driver: local
+  telegram-bot-api-data:
