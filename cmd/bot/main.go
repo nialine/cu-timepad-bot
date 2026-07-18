@@ -72,9 +72,10 @@ func main() {
 		)
 		os.Exit(1)
 	}
-    ctx_ping, cancel := context.WithTimeout(ctx, 5*time.Second)
-    defer cancel()
-	err = client.Ping(, nil)
+
+	ctx_ping, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	err = client.Ping(ctx_ping, nil)
 	if err != nil {
 		slog.LogAttrs(
 			ctx,
@@ -84,6 +85,7 @@ func main() {
 		)
 		os.Exit(1)
 	}
+
 	st := store.New(ctx, client)
 	h := handler.New(st)
 
