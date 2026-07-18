@@ -1,0 +1,3 @@
+<b>{{.new_slots.Event.Name}}</b>: Новые слоты!
+{{range .new_slots.NewSlots}}{{.DateH}}
+{{else}}{{end}}

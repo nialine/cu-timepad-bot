@@ -3,33 +3,47 @@ package timepad
 import (
 	"context"
 	"encoding/json"
+	"net/http"
 	"regexp"
 
 	"github.com/gocolly/colly/v2"
 )
 
-func GetRawData(ctx context.Context, url string) (string, error) {
+type Client struct {
+	HTTPClient *http.Client
+}
+
+func (client *Client) GetRawData(ctx context.Context, url string) (string, error) {
+	re := regexp.MustCompile("return *(?P<json>{.*});")
+
 	c := colly.NewCollector(
 		colly.StdlibContext(ctx),
 	)
 
-	var raw_json string
+	c.SetClient(client.HTTPClient)
 
-	c.OnHTML("script #id", func(e *colly.HTMLElement) {
-		re, err := regexp.Compile("return *(?P<json>{.*});")
-		if err != nil {
-			panic("ERROR: Compilation of regex failed")
-		}
-		raw_json = re.FindString(e.Text)
+	var match []string
+
+	c.OnHTML(".event-registration #evModel", func(e *colly.HTMLElement) {
+		match = re.FindStringSubmatch(e.Text)
 	})
 
-	c.Visit(url)
+	err := c.Visit(url)
+	if err != nil {
+		return "", err
+	}
 
-	return raw_json, nil
+	if len(match) > 0 {
+		jsonIndex := re.SubexpIndex("json")
+
+		return match[jsonIndex], nil
+	}
+
+	return "", ErrParse
 }
 
-func GetData(ctx context.Context, url string) (*Event, error) {
-	raw_json, err := GetRawData(ctx, url)
+func (client *Client) GetData(ctx context.Context, url string) (*Event, error) {
+	raw_json, err := client.GetRawData(ctx, url)
 	if err != nil {
 		return nil, err
 	}

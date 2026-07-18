@@ -1,0 +1,3 @@
+<b>Error happened</b> at <code>{{.time}}</code>
+your chat id: <code>{{.chatid}}</code>
+Please contact @niazya
