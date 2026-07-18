@@ -55,7 +55,7 @@ func (st *MongoStore) GetUser(ctx context.Context, userid int64) (*domain.User, 
 	return user, nil
 }
 
-func (st *MongoStore) IsSubcribedUser(ctx context.Context, userid int64, eventid domain.EventID) (bool, error) {
+func (st *MongoStore) IsSubscribedUser(ctx context.Context, userid int64, eventid domain.EventID) (bool, error) {
 	user, err := st.GetUser(ctx, userid)
 	if err != nil {
 		return false, err

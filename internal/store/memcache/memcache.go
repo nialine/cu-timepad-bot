@@ -57,7 +57,7 @@ func (st *MemCacheStore[T]) GetUser(ctx context.Context, userid int64) (*domain.
 	return user, nil
 }
 
-func (st *MemCacheStore[T]) IsSubcribedUser(ctx context.Context, userid int64, event domain.EventID) (bool, error) {
+func (st *MemCacheStore[T]) IsSubscribedUser(ctx context.Context, userid int64, event domain.EventID) (bool, error) {
 	user, err := st.GetUser(ctx, userid)
 	if err != nil {
 		return false, err

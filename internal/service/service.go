@@ -38,7 +38,7 @@ func (s *Service) GetUser(ctx context.Context, userid int64) (*domain.User, erro
 }
 
 func (s *Service) IsSubscribedUser(ctx context.Context, userid int64, eventid domain.EventID) (bool, error) {
-	return s.st.IsSubcribedUser(ctx, userid, eventid)
+	return s.st.IsSubscribedUser(ctx, userid, eventid)
 }
 
 func (s *Service) FindUsersWithEvent(ctx context.Context, eventid domain.EventID) []domain.User {
