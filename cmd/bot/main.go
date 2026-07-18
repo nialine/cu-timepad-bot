@@ -72,6 +72,20 @@ func main() {
 		)
 		os.Exit(1)
 	}
+
+	ctx_ping, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	err = client.Ping(ctx_ping, nil)
+	if err != nil {
+		slog.LogAttrs(
+			ctx,
+			slog.LevelError,
+			"MongoDB ping failed",
+			slog.Any("error", err),
+		)
+		os.Exit(1)
+	}
+
 	st := store.New(ctx, client)
 	h := handler.New(st)
 
