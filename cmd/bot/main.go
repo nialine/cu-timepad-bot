@@ -72,6 +72,17 @@ func main() {
 		)
 		os.Exit(1)
 	}
+	err = client.Ping(ctx, nil)
+	if err != nil {
+		slog.LogAttrs(
+			ctx,
+			slog.LevelError,
+			"Can't connect to mongodb",
+			slog.Any("error", err.Error()),
+			slog.String("mongodb_uri", cfg.MongoURI),
+		)
+		os.Exit(1)
+	}
 	st := store.New(ctx, client)
 	h := handler.New(st)
 
