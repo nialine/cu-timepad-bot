@@ -19,7 +19,7 @@ type Config struct {
 	MongoURI         string `env:"MONGODB"`
 	DBName           string `env:"MONGO_DBNAME" envDefault:"timepad-bot"`
 	MemCacheDuration int    `env:"MEMCACHE_DURATION" envDefault:"300"`
-	PROXYURL string `env:"PROXY_URL"`
+	PROXYURL         string `env:"PROXY_URL"`
 
 	Events               []domain.Event `yaml:"events"`
 	TimepadFetchInterval int            `yaml:"fetch_interval"`
