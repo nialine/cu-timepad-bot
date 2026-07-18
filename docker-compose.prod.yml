@@ -10,6 +10,8 @@ services:
       - BOT_TOKEN=${BOT_TOKEN}
       - LOG_LEVEL=${LOG_LEVEL}
       - PROXY_URL=${PROXY_URL}
+    volumes:
+      - ./config.yaml:/config.yaml
     depends_on:
       - mongodb
       - xray
