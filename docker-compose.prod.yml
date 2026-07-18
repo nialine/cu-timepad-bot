@@ -3,8 +3,6 @@ services:
     image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/${IMAGE_NAME}:latest
     container_name: cu-timepad-bot-app
     restart: unless-stopped
-    ports:
-      - "42888:80"
     environment:
       - MONGODB=mongodb://root:${MONGODB_PASSWORD}@mongodb:27017/
       - BOT_TOKEN=${BOT_TOKEN}
@@ -36,4 +34,3 @@ services:
 volumes:
   mongo_data:
     driver: local
-  telegram-bot-api-data:
