@@ -5,6 +5,24 @@ on:
     branches: [ master ]
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      go: ${{ steps.filter.outputs.go }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check for Go changes
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            go:
+              - '**/*.go'
+              - 'go.mod'
+              - 'go.sum'
+
   go-checks:
     name: Run Go Checks
     runs-on: ubuntu-latest
@@ -13,14 +31,17 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v7
+        if: ${{ needs.changes.outputs.go == 'true' }}
 
       - name: Set up Go
         uses: actions/setup-go@v7
+        if: ${{ needs.changes.outputs.go == 'true' }}
         with:
           go-version: '1.26.2'
           cache: true
 
       - name: Run Go Format Check
+        if: ${{ needs.changes.outputs.go == 'true' }}
         run: |
           unformatted="$(gofmt -l .)"
           if [ -n "$unformatted" ]; then
@@ -30,7 +51,13 @@ jobs:
           fi
 
       - name: Run Go Vet
+        if: ${{ needs.changes.outputs.go == 'true' }}
         run: go vet ./...
 
       - name: Run Go Build
+        if: ${{ needs.changes.outputs.go == 'true' }}
         run: go build -v ./...
+
+      - name: No-op for skipped project files
+        if: ${{ needs.changes.outputs.go != 'true' }}
+        run: echo "No Go project files changed. Skipping checks safely."
