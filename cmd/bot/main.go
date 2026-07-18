@@ -60,7 +60,7 @@ func main() {
 	defer cancel()
 	ctx = config.InjectConfig(ctx, cfg)
 
-	mongo_opts := options.Client().ApplyURI(cfg.MongoURI)
+	mongo_opts := options.Client().ApplyURI(cfg.MongoURI).SetTimeout(1 * time.Second)
 	client, err := mongo.Connect(mongo_opts)
 	if err != nil {
 		slog.LogAttrs(
