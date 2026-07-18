@@ -89,7 +89,7 @@ func Handle(ctx context.Context, h handler.Handler) (*bot.Bot, error) {
 			URL: cfg.WebhookURL,
 		})
 		go func() {
-			http.ListenAndServe(":80", b.WebhookHandler())
+			http.ListenAndServe(":8000", b.WebhookHandler())
 		}()
 	} else {
 		b.DeleteWebhook(ctx, nil)
