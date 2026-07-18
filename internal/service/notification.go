@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/go-telegram/bot"
+	"github.com/go-telegram/bot/models"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -72,8 +73,9 @@ func (h *Service) sendNotification(ctx context.Context, b *bot.Bot, userid int64
 	}
 
 	b.SendMessage(ctx, &bot.SendMessageParams{
-		ChatID: userid,
-		Text:   templates.Render("new_slots_notification", templateData),
+		ChatID:    userid,
+		Text:      templates.Render("new_slots_notification", templateData),
+		ParseMode: models.ParseModeHTML,
 	})
 	return nil
 }
