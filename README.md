@@ -4,6 +4,7 @@ Telegram-бот для мониторинга появления новых за
 ## Установка и запуск
 ```
 echo 'BOT_TOKEN=YOUR_BOT_TOKEN' > .env
+echo 'MONGODB=mongodb://examplelogin:examplepassword@mongo:27017' >> .env
 
 go install
 go run cmd/bot
