@@ -8,11 +8,12 @@ services:
       - BOT_TOKEN=${BOT_TOKEN}
       - LOG_LEVEL=${LOG_LEVEL}
       - PROXY_URL=${PROXY_URL}
+      - TELEGRAM_API_URL=${TELEGRAM_API_URL}
     volumes:
       - ./config.yaml:/config.yaml
     depends_on:
       - mongodb
-      - xray
+      # - xray
 
   mongodb:
     image: dburszty/mongodb-raspberrypi:7.0.14
@@ -24,12 +25,12 @@ services:
     volumes:
       - mongo_data:/data/db
 
-  xray:
-    image: teddysun/xray:latest
-    container_name: cu-timepad-bot-xray
-    restart: unless-stopped
-    volumes:
-      - "./xray.conf:/etc/xray/config.json"
+  # xray:
+  #   image: teddysun/xray:latest
+  #   container_name: cu-timepad-bot-xray
+  #   restart: unless-stopped
+  #   volumes:
+  #     - "./xray.conf:/etc/xray/config.json"
 
 volumes:
   mongo_data:
