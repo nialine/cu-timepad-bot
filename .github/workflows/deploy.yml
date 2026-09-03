@@ -69,6 +69,7 @@ jobs:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           TELEGRAM_API_URL: ${{ secrets.TELEGRAM_API_URL }}
           MONGODB_PASSWORD: ${{ secrets.MONGODB_PASSWORD }}
+          REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
           WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
           XRAY_CONFIG: ${{ secrets.XRAY_CONFIG }}
           TIMEPAD_URL: ${{ vars.TIMEPAD_URL }}
