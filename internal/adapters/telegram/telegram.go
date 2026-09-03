@@ -96,5 +96,6 @@ func Handle(ctx context.Context, h handler.Handler) (*bot.Bot, error) {
 	}
 
 	b.RegisterHandler(bot.HandlerTypeMessageText, "/start", bot.MatchTypeExact, h.Start)
+	b.RegisterHandler(bot.HandlerTypeMessageText, "/about", bot.MatchTypeExact, h.About)
 	return b, nil
 }
