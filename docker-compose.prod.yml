@@ -44,3 +44,5 @@ services:
 volumes:
   mongo_data:
     driver: local
+  redis_data:
+    driver: local
