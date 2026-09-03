@@ -44,7 +44,7 @@ func init() {
 	}
 }
 
-func Render(name string, data any) string {
+func Render(name string, data *map[string]any) string {
 	var buf bytes.Buffer
 	if err := tmpl.ExecuteTemplate(&buf, name, data); err != nil {
 		return "ErrTemplateInvalid"

@@ -1,0 +1,53 @@
+services:
+  app:
+    build: .
+    container_name: cu-timepad-bot-app
+    environment:
+      - MONGODB=mongodb://root:${MONGODB_PASSWORD}@mongodb:27017/
+      - REDIS=redis://default:${REDIS_PASSWORD}@redis:6379/
+      - BOT_TOKEN=${BOT_TOKEN}
+      - TELEGRAM_API_URL=${TELEGRAM_API_URL}
+      - PROXY_URL=${PROXY_URL}
+      - LOG_LEVEL=debug
+    volumes:
+      - ./config.yaml:/config.yaml
+    develop:
+      watch:
+        -  action: rebuild
+           path: ./cmd
+        -  action: rebuild
+           path: ./internal
+        -  action: rebuild
+           path: ./Dockerfile
+        -  action: rebuild
+           path: ./go.mod
+    depends_on:
+      - mongodb
+      - redis
+
+  mongodb:
+    image: mongo:7.0
+    ports:
+      - "27017:27017"
+    container_name: cu-timepad-bot-mongodb
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGODB_PASSWORD}
+    volumes:
+      - mongo_data:/data/db
+
+  redis:
+    image: redis:latest
+    container_name: cu-timepad-bot-redis
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_ARGS=--requirepass ${REDIS_PASSWORD} --appendonly yes
+    # volumes:
+    #   - redis_data:/data
+
+
+volumes:
+  mongo_data:
+    driver: local
+  # redis_data:
+  #   driver: local
