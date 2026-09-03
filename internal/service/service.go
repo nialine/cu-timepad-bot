@@ -2,77 +2,95 @@ package service
 
 import (
 	"context"
+	"cu-timepad-bot/internal/adapters/timepad"
 	"cu-timepad-bot/internal/domain"
+	"cu-timepad-bot/internal/drafts"
 	"cu-timepad-bot/internal/store"
 	"log/slog"
+	"net/mail"
 	"slices"
 	"strconv"
-	"time"
-
-	"github.com/patrickmn/go-cache"
 )
 
-type Service struct {
-	st         store.Store
-	cacheEvent *cache.Cache
-
-	NewSlots chan domain.NewSlots
+func isEmailValid(email string) bool {
+	_, err := mail.ParseAddress(email)
+	return err == nil
 }
 
-func New(st store.Store) *Service {
-	cache_event := cache.New(cache.NoExpiration, time.Minute)
+type Service struct {
+	st      store.UserStore
+	draftst store.DraftStore
+
+	cacheEvent    map[int64][]timepad.RecurringEvent
+	timepadClient *timepad.Client
+	NewSlots      chan *domain.NewSlots
+}
+
+func New(st store.UserStore, draftst store.DraftStore, timepad_client *timepad.Client) *Service {
+	cache_event := make(map[int64][]timepad.RecurringEvent)
 
 	return &Service{
 		st,
+		draftst,
 		cache_event,
-		make(chan domain.NewSlots, 4),
+		timepad_client,
+		make(chan *domain.NewSlots, 4),
 	}
 }
 
-func (s *Service) AddUser(ctx context.Context, userid int64) error {
-	return s.st.AddUser(ctx, userid)
+func (svc *Service) AddUser(ctx context.Context, userid int64) error {
+	return svc.st.AddUser(ctx, userid)
 }
 
-func (s *Service) GetUser(ctx context.Context, userid int64) (*domain.User, error) {
-	return s.st.GetUser(ctx, userid)
+func (svc *Service) GetUser(ctx context.Context, userid int64) (*domain.User, error) {
+	return svc.st.GetUser(ctx, userid)
 }
 
-func (s *Service) IsSubscribedUser(ctx context.Context, userid int64, eventid domain.EventID) (bool, error) {
-	return s.st.IsSubscribedUser(ctx, userid, eventid)
+func (svc *Service) IsSubscribedUser(ctx context.Context, userid int64, eventid int64) (bool, error) {
+	return svc.st.IsSubscribedUser(ctx, userid, eventid)
 }
 
-func (s *Service) FindUsersWithEvent(ctx context.Context, eventid domain.EventID) []domain.User {
-	return s.st.FindUsersWithEvent(ctx, eventid)
+func (svc *Service) FindUsersWithEvent(ctx context.Context, eventid int64) []*domain.User {
+	return svc.st.FindUsersWithEvent(ctx, eventid)
 }
 
-func (s *Service) AddUserSubscribedEvent(ctx context.Context, userid int64, eventid domain.EventID) error {
-	return s.st.AddUserSubscribedEvent(ctx, userid, eventid)
+func (svc *Service) AddUserSubscribedEvent(ctx context.Context, userid int64, eventid int64) error {
+	return svc.st.AddUserSubscribedEvent(ctx, userid, eventid)
 }
 
-func (s *Service) RemoveUserSubscribedEvent(ctx context.Context, userid int64, eventid domain.EventID) error {
-	return s.st.RemoveUserSubscribedEvent(ctx, userid, eventid)
+func (svc *Service) RemoveUserSubscribedEvent(ctx context.Context, userid int64, eventid int64) error {
+	return svc.st.RemoveUserSubscribedEvent(ctx, userid, eventid)
 }
 
-func (s *Service) ProcessEventCallback(ctx context.Context, userid int64, callbackData []string) error {
-	eventid, err := strconv.ParseInt(callbackData[1], 10, 64)
+func (svc *Service) HasRegistrationData(ctx context.Context, userid int64) bool {
+	user, _ := svc.GetUser(ctx, userid)
+	return user.BookingUserData != nil
+}
+
+func (svc *Service) InRegistrationProcess(ctx context.Context, userid int64) bool {
+	return drafts.HasBooking(ctx, svc.draftst, userid)
+}
+
+func (svc *Service) ProcessEventCallback(ctx context.Context, userid int64, callbackData []string) error {
+	eventid, err := strconv.ParseInt(callbackData[0], 10, 64)
 	if err != nil {
 		return err
 	}
-	user, err := s.GetUser(ctx, userid)
+	user, err := svc.GetUser(ctx, userid)
 	if err != nil {
 		return err
 	}
 	status := ""
-	if slices.Contains(user.SubscribedEvents, domain.EventID(eventid)) {
-		err = s.RemoveUserSubscribedEvent(ctx,
+	if slices.Contains(user.SubscribedEvents, eventid) {
+		err = svc.RemoveUserSubscribedEvent(ctx,
 			userid,
-			domain.EventID(eventid),
+			eventid,
 		)
 		status = "unsubscribed"
 	} else {
-		err = s.AddUserSubscribedEvent(ctx,
+		err = svc.AddUserSubscribedEvent(ctx,
 			userid,
-			domain.EventID(eventid),
+			eventid,
 		)
 		status = "subscribed"
 	}
@@ -80,7 +98,7 @@ func (s *Service) ProcessEventCallback(ctx context.Context, userid int64, callba
 		return err
 	}
 	slog.LogAttrs(ctx,
-		slog.LevelDebug,
+		slog.LevelInfo,
 		"User changed subscription to event",
 		slog.Int64("userid", userid),
 		slog.Int64("eventid", eventid),
@@ -89,8 +107,8 @@ func (s *Service) ProcessEventCallback(ctx context.Context, userid int64, callba
 	return nil
 }
 
-func (s *Service) GenEventButton(ctx context.Context, userid int64, ev domain.Event) (string, error) {
-	is_subscribed, err := s.IsSubscribedUser(ctx, userid, ev.ID)
+func (svc *Service) GenSubscribeEventButton(ctx context.Context, userid int64, ev *domain.Event) (string, error) {
+	is_subscribed, err := svc.IsSubscribedUser(ctx, userid, ev.ID)
 	if err != nil {
 		return "", err
 	}
@@ -99,4 +117,24 @@ func (s *Service) GenEventButton(ctx context.Context, userid int64, ev domain.Ev
 		text_prefix = "✓ "
 	}
 	return text_prefix + ev.Name, nil
+}
+
+func (svc *Service) GetAvaliableSlots(ctx context.Context, ev *domain.Event) ([]timepad.RecurringEvent, error) {
+	timepad_slots, ok := svc.cacheEvent[ev.ID]
+	if !ok {
+		err := svc.processEvent(ctx, ev)
+		if err != nil {
+			slog.LogAttrs(ctx,
+				slog.LevelError,
+				"Error processing events",
+				slog.Any("error", err),
+				slog.Int("eventid", int(ev.ID)),
+			)
+			return nil, err
+		} else {
+			timepad_slots, _ = svc.cacheEvent[ev.ID]
+		}
+	}
+
+	return timepad_slots, nil
 }

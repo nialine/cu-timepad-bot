@@ -1,10 +1,9 @@
-package botsetup
+package telegram
 
 import (
 	"context"
 	"cu-timepad-bot/internal/config"
 	"cu-timepad-bot/internal/handler"
-	"cu-timepad-bot/internal/middleware"
 	"log/slog"
 	"net/http"
 	"net/url"
@@ -20,10 +19,11 @@ func Handle(ctx context.Context, h handler.Handler) (*bot.Bot, error) {
 	cfg := config.GetConfig(ctx)
 	bot_opts := []bot.Option{
 		bot.WithMiddlewares(
-			middleware.SingleFlight,
-			middleware.Logging,
-			middleware.AutoRespond,
+			SingleFlight,
+			Logging,
+			AutoRespond,
 		),
+		bot.WithDefaultHandler(h.DefaultHandler),
 		bot.WithCallbackQueryDataHandler("", bot.MatchTypePrefix, h.CallbackHandler),
 	}
 	if cfg.TelegramAPIURL != "" {

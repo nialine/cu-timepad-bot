@@ -1,8 +1,8 @@
 package templates
 
 import (
+	"cu-timepad-bot/internal/adapters/timepad"
 	"cu-timepad-bot/internal/domain"
-	"cu-timepad-bot/pkg/timepad"
 	"strings"
 	"testing"
 	"time"
@@ -49,7 +49,7 @@ func TestNewSlotsNotification(t *testing.T) {
 		"time":      time.Now(),
 	}
 
-	text := Render("new_slots_notification", data)
+	text := Render("new_slots_notification", &data)
 	t.Logf("Resulted test: %v", text)
 	if strings.HasPrefix(text, "Err") {
 		t.Error("new_slots_notification template returned error")

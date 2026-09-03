@@ -10,20 +10,33 @@ import (
 )
 
 type Config struct {
+	LogLevel string `env:"LOG_LEVEL" envDefault:"warn"`
+
 	TelegramAPIURL string `env:"TELEGRAM_API_URL"`
 	BotToken       string `env:"BOT_TOKEN,required"`
 	WebhookURL     string `env:"WEBHOOK_URL"`
 
-	LogLevel string `env:"LOG_LEVEL" envDefault:"warn"`
+	PROXYURL string `env:"PROXY_URL"`
 
 	MongoURI         string `env:"MONGODB"`
 	DBName           string `env:"MONGO_DBNAME" envDefault:"timepad-bot"`
 	MemCacheDuration int    `env:"MEMCACHE_DURATION" envDefault:"300"`
-	PROXYURL         string `env:"PROXY_URL"`
 
-	Events               []domain.Event `yaml:"events"`
-	TimepadFetchInterval int            `yaml:"fetch_interval"`
-	TimepadTimeout       int            `yaml:"timepad_timeout"`
+	RedisURI string `env:"REDIS"`
+
+	TimepadURL           string          `yaml:"timepad_url"`
+	Events               []*domain.Event `yaml:"events"`
+	TimepadFetchInterval int             `yaml:"fetch_interval"`
+	TimepadTimeout       int             `yaml:"timepad_timeout"`
+}
+
+func (cfg *Config) GetEvent(eventid int64) (*domain.Event, error) {
+	for _, ev := range cfg.Events {
+		if ev.ID == eventid {
+			return ev, nil
+		}
+	}
+	return nil, domain.ErrEventNotFound
 }
 
 func Load() (Config, error) {

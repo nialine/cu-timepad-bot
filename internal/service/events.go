@@ -2,18 +2,28 @@ package service
 
 import (
 	"context"
+	"cu-timepad-bot/internal/adapters/timepad"
 	"cu-timepad-bot/internal/config"
 	"cu-timepad-bot/internal/domain"
-	"cu-timepad-bot/pkg/timepad"
 	"log/slog"
 	"slices"
 	"time"
 
-	"github.com/patrickmn/go-cache"
 	"golang.org/x/sync/errgroup"
 )
 
-func (h *Service) StartTimepadWorker(ctx context.Context, client *timepad.Client) {
+func (svc *Service) getSlot(eventid, slotid int64) *timepad.RecurringEvent {
+	timepad_slots, _ := svc.cacheEvent[eventid]
+
+	for _, slot := range slices.Backward(timepad_slots) {
+		if slot.ID == slotid {
+			return &slot
+		}
+	}
+	return nil
+}
+
+func (svc *Service) StartTimepadWorker(ctx context.Context) {
 	cfg := config.GetConfig(ctx)
 
 	interval := time.Duration(cfg.TimepadFetchInterval) * time.Second
@@ -29,7 +39,7 @@ func (h *Service) StartTimepadWorker(ctx context.Context, client *timepad.Client
 				slog.LevelDebug,
 				"Processing timepad events",
 			)
-			h.processTimepadEvents(ctx, client)
+			svc.processTimepadEvents(ctx)
 			slog.LogAttrs(ctx,
 				slog.LevelDebug,
 				"Stopped processing events",
@@ -38,15 +48,14 @@ func (h *Service) StartTimepadWorker(ctx context.Context, client *timepad.Client
 	}
 }
 
-func (h *Service) processTimepadEvents(ctx context.Context, client *timepad.Client) {
+func (svc *Service) processTimepadEvents(ctx context.Context) {
 	cfg := config.GetConfig(ctx)
 
 	g, gctx := errgroup.WithContext(ctx)
 
 	for _, ev := range cfg.Events {
-		ev := ev
 		g.Go(func() error {
-			err := h.processEvent(gctx, client, ev)
+			err := svc.processEvent(gctx, ev)
 			if err == nil {
 				slog.LogAttrs(ctx,
 					slog.LevelDebug,
@@ -67,32 +76,37 @@ func (h *Service) processTimepadEvents(ctx context.Context, client *timepad.Clie
 	}
 }
 
-func (h *Service) processEvent(ctx context.Context, client *timepad.Client, ev domain.Event) error {
-	event, err := client.GetData(ctx, ev.URL)
+func (svc *Service) processEvent(ctx context.Context, ev *domain.Event) error {
+	var event *timepad.Event
+	var err error
+	if ev.URL == "" {
+		event, err = svc.timepadClient.GetEventDataID(ctx, ev.ID)
+	} else {
+		event, err = svc.timepadClient.GetEventDataURL(ctx, ev.URL)
+	}
 	if err != nil {
 		return err
 	}
-	recurring_events := deleteIrrelevantRecurringEvents(event.RecurringEvents)
 
-	c, ok := h.cacheEvent.Get(event.Name)
+	recurring_events := deleteUnavailableRecurringEvents(event.RecurringEvents)
+
+	last_recurring_events, ok := svc.cacheEvent[ev.ID]
 	if ok {
-		last_recurring_events := c.([]timepad.RecurringEvent)
-
 		diff := make([]timepad.RecurringEvent, 0, 16)
 		for _, v := range recurring_events {
 			if !slices.ContainsFunc(last_recurring_events, func(ev timepad.RecurringEvent) bool {
 				return ev.ID == v.ID && ev.Unavailable == v.Unavailable
-			}) && !v.Unavailable {
+			}) {
 				diff = append(diff, v)
 			}
 		}
 
 		if len(diff) > 0 {
-			h.cacheEvent.Set(event.Name, recurring_events, cache.DefaultExpiration)
-			go h.NotifyPeople(ctx, ev, diff)
+			svc.cacheEvent[ev.ID] = recurring_events
+			go svc.NotifyPeople(ctx, ev, diff)
 		}
 	} else {
-		h.cacheEvent.Set(event.Name, recurring_events, cache.DefaultExpiration)
+		svc.cacheEvent[ev.ID] = recurring_events
 	}
 	return nil
 }
@@ -100,5 +114,11 @@ func (h *Service) processEvent(ctx context.Context, client *timepad.Client, ev d
 func deleteIrrelevantRecurringEvents(events []timepad.RecurringEvent) []timepad.RecurringEvent {
 	return slices.DeleteFunc(events, func(ev timepad.RecurringEvent) bool {
 		return ev.TicketsLeft == nil
+	})
+}
+
+func deleteUnavailableRecurringEvents(events []timepad.RecurringEvent) []timepad.RecurringEvent {
+	return slices.DeleteFunc(events, func(ev timepad.RecurringEvent) bool {
+		return ev.TicketsLeft == nil || *ev.TicketsLeft == 0
 	})
 }
