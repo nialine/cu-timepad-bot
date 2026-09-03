@@ -5,6 +5,7 @@ services:
     restart: unless-stopped
     environment:
       - MONGODB=mongodb://root:${MONGODB_PASSWORD}@mongodb:27017/
+      - REDIS=redis://default:${REDIS_PASSWORD}@redis:6379/
       - BOT_TOKEN=${BOT_TOKEN}
       - LOG_LEVEL=${LOG_LEVEL}
       - PROXY_URL=${PROXY_URL}
