@@ -8,3 +8,7 @@ events:
     name_r: "Психолога Светланы Шутьковой"
     id: 3219855
     magic_string: "19105642996363502282"
+  - name: "Психиатр"
+    name_r: "Психиатра"
+    id: 4085087
+    magic_string: "0" # TODO: fix when slots will be available
