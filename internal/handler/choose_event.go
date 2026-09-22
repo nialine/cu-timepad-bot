@@ -26,7 +26,7 @@ func (h *Handler) ChooseEventCallback(ctx context.Context, b *bot.Bot, update *m
 
 	kb.InlineKeyboard = append(kb.InlineKeyboard, []models.InlineKeyboardButton{{
 		Text:         templates.Render("back_button", &templateData),
-		CallbackData: startCallback,
+		CallbackData: StartCallback,
 	}})
 
 	_, err := b.EditMessageText(ctx, &bot.EditMessageTextParams{

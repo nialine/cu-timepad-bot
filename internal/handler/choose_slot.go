@@ -53,9 +53,12 @@ func (h *Handler) chooseSlotCallback(ctx context.Context, b *bot.Bot, update *mo
 
 	for i := page * slotsOnPage; i < min((page+1)*slotsOnPage, len(slots)); i++ {
 		slot := slots[i]
+		slot_templateData := templateData
+		slot_templateData["Slot"] = slot
+
 		kb.InlineKeyboard = append(kb.InlineKeyboard, []models.InlineKeyboardButton{{
-			Text:         slot.DateH,
-			CallbackData: fmt.Sprintf("%v:%v:%v:%v", reserveSlotCallback, eventid, page, slot.ID),
+			Text:         templates.Render("choose_slot_button", &templateData),
+			CallbackData: fmt.Sprintf("%v:%v:%v:%v", ReserveSlotCallback, eventid, page, slot.ID),
 		}})
 	}
 	if max_page > 0 {
@@ -64,23 +67,23 @@ func (h *Handler) chooseSlotCallback(ctx context.Context, b *bot.Bot, update *mo
 		if page > 0 {
 			*last_elem = append(*last_elem, models.InlineKeyboardButton{
 				Text:         "<-",
-				CallbackData: fmt.Sprintf("%v:%v:%v", chooseSlotCallback, eventid, page-1),
+				CallbackData: fmt.Sprintf("%v:%v:%v", ChooseSlotCallback, eventid, page-1),
 			})
 		}
 		if page < max_page {
 			*last_elem = append(*last_elem, models.InlineKeyboardButton{
 				Text:         "->",
-				CallbackData: fmt.Sprintf("%v:%v:%v", chooseSlotCallback, eventid, page+1),
+				CallbackData: fmt.Sprintf("%v:%v:%v", ChooseSlotCallback, eventid, page+1),
 			})
 		}
 	}
 
 	kb.InlineKeyboard = append(kb.InlineKeyboard, []models.InlineKeyboardButton{{
 		Text:         templates.Render("back_button", &templateData),
-		CallbackData: chooseEventForBookingCallback,
+		CallbackData: ChooseEventForBookingCallback,
 	}, {
 		Text:         templates.Render("home_button", &templateData),
-		CallbackData: startCallback,
+		CallbackData: StartCallback,
 	}})
 
 	if len(slots) > 0 {

@@ -18,13 +18,13 @@ const slotsOnPage = 6
 type callbacks string
 
 const (
-	subscribeEventsCallback       = "events"
-	startCallback                 = "start"
-	chooseEventForBookingCallback = "chooseforbooking"
-	chooseSlotCallback            = "selectslot"
-	reserveSlotCallback           = "reserveslot"
-	bookingDataCallback           = "bookingdata"
-	tempBookingDataCallback       = "tempbookingdata"
+	SubscribeEventsCallback       = "events"
+	StartCallback                 = "start"
+	ChooseEventForBookingCallback = "chooseforbooking"
+	ChooseSlotCallback            = "selectslot"
+	ReserveSlotCallback           = "reserveslot"
+	BookingDataCallback           = "bookingdata"
+	TempBookingDataCallback       = "tempbookingdata"
 )
 
 type service interface {
@@ -35,8 +35,10 @@ type service interface {
 	GetAvaliableSlots(ctx context.Context, ev *domain.Event) ([]timepad.RecurringEvent, error)
 	HasRegistrationData(ctx context.Context, userid int64) bool
 	ReserveSlot(ctx context.Context, userid int64, eventid int64, slotid int64, userdata *domain.BookingUserData) (*timepad.RecurringEvent, error)
-	InRegistrationProcess(ctx context.Context, userid int64) bool
+	InRegistrationProcess(ctx context.Context, userid int64) domain.Status
+	GetTempRegistration(ctx context.Context, userid int64) (*drafts.TempRegistrationDraft, error)
 	HandleRegistrationInput(ctx context.Context, userid int64, text string) (drafts.State, error)
+	HandleTempBookingInput(ctx context.Context, userid int64, text string, data *domain.ChooseSlotData) (drafts.State, error)
 }
 
 type Handler struct {

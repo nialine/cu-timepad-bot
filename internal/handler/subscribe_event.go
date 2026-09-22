@@ -34,13 +34,13 @@ func (h *Handler) SubscribeEventsCallback(ctx context.Context, b *bot.Bot, updat
 		}
 		kb.InlineKeyboard = append(kb.InlineKeyboard, []models.InlineKeyboardButton{{
 			Text:         text,
-			CallbackData: fmt.Sprintf("%v:%v", subscribeEventsCallback, ev.ID),
+			CallbackData: fmt.Sprintf("%v:%v", SubscribeEventsCallback, ev.ID),
 		}})
 	}
 
 	kb.InlineKeyboard = append(kb.InlineKeyboard, []models.InlineKeyboardButton{{
 		Text:         templates.Render("back_button", &templateData),
-		CallbackData: startCallback,
+		CallbackData: StartCallback,
 	}})
 
 	_, err := b.EditMessageText(ctx, &bot.EditMessageTextParams{

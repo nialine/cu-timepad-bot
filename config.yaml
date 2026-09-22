@@ -3,8 +3,15 @@ events:
   - name: "Психолог Лилия Павлова"
     name_r: "Психолога Лилии Павловой"
     id: 3558805
+    url: "https://cu-events.timepad.ru/event/3558805/"
     magic_string: "19107501836029767397"
   - name: "Психолог Светлана Шутькова"
     name_r: "Психолога Светланы Шутьковой"
     id: 3219855
+    url: "https://cu-events.timepad.ru/event/3219855/"
     magic_string: "19105642996363502282"
+  - name: "Психиатр"
+    name_r: "Психиатра"
+    id: 4085087
+    url: "https://cu-events.timepad.ru/event/4085087/"
+    magic_string: "0" # TODO: fix when slots will be available

@@ -36,12 +36,12 @@ func (svc *Service) StartTimepadWorker(ctx context.Context) {
 			return
 		case <-ticker.C:
 			slog.LogAttrs(ctx,
-				slog.LevelDebug,
+				slog.LevelInfo,
 				"Processing timepad events",
 			)
 			svc.processTimepadEvents(ctx)
 			slog.LogAttrs(ctx,
-				slog.LevelDebug,
+				slog.LevelInfo,
 				"Stopped processing events",
 			)
 		}
@@ -56,13 +56,6 @@ func (svc *Service) processTimepadEvents(ctx context.Context) {
 	for _, ev := range cfg.Events {
 		g.Go(func() error {
 			err := svc.processEvent(gctx, ev)
-			if err == nil {
-				slog.LogAttrs(ctx,
-					slog.LevelDebug,
-					"Event processed",
-					slog.Int("eventid", int(ev.ID)),
-				)
-			}
 			return err
 		})
 	}
@@ -77,6 +70,11 @@ func (svc *Service) processTimepadEvents(ctx context.Context) {
 }
 
 func (svc *Service) processEvent(ctx context.Context, ev *domain.Event) error {
+	slog.LogAttrs(ctx,
+		slog.LevelDebug,
+		"Event processing",
+		slog.Int("eventid", int(ev.ID)),
+	)
 	var event *timepad.Event
 	var err error
 	if ev.URL == "" {
@@ -88,6 +86,7 @@ func (svc *Service) processEvent(ctx context.Context, ev *domain.Event) error {
 		return err
 	}
 
+	// recurring_events := event.RecurringEvents
 	recurring_events := deleteUnavailableRecurringEvents(event.RecurringEvents)
 
 	last_recurring_events, ok := svc.cacheEvent[ev.ID]
@@ -108,6 +107,11 @@ func (svc *Service) processEvent(ctx context.Context, ev *domain.Event) error {
 	} else {
 		svc.cacheEvent[ev.ID] = recurring_events
 	}
+	slog.LogAttrs(ctx,
+		slog.LevelDebug,
+		"Event processed",
+		slog.Int("eventid", int(ev.ID)),
+	)
 	return nil
 }
 
@@ -119,6 +123,6 @@ func deleteIrrelevantRecurringEvents(events []timepad.RecurringEvent) []timepad.
 
 func deleteUnavailableRecurringEvents(events []timepad.RecurringEvent) []timepad.RecurringEvent {
 	return slices.DeleteFunc(events, func(ev timepad.RecurringEvent) bool {
-		return ev.TicketsLeft == nil || *ev.TicketsLeft == 0
+		return ev.Unavailable
 	})
 }

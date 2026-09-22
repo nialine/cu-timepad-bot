@@ -79,17 +79,14 @@ func SaveBooking(ctx context.Context, draftStore store.DraftStore, userid int64,
 	saveDraft[RegistrationDraft](ctx, draftStore, makeRegistrationKey(userid, false), *draft, defaultTTL)
 }
 
-func HasBooking(ctx context.Context, draftStore store.DraftStore, userid int64) bool {
+func HasBooking(ctx context.Context, draftStore store.DraftStore, userid int64) domain.Status {
 	draft, _ := getDraft[RegistrationDraft](ctx, draftStore, makeRegistrationKey(userid, false))
 	tempdraft, _ := getDraft[TempRegistrationDraft](ctx, draftStore, makeRegistrationKey(userid, true))
-	if draft != nil && draft.State == StateDone {
-		return false
+	switch {
+	case draft != nil && draft.State != StateDone:
+		return domain.StatusRegistration
+	case tempdraft != nil && tempdraft.State != StateDone:
+		return domain.StatusTempRegistration
 	}
-	if tempdraft != nil && tempdraft.State == StateDone {
-		return false
-	}
-	if tempdraft == nil && draft == nil {
-		return false
-	}
-	return true
+	return domain.StatusNone
 }

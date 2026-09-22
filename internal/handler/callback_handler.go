@@ -17,17 +17,17 @@ func (h *Handler) CallbackHandler(ctx context.Context, b *bot.Bot, update *model
 
 	data := strings.Split(update.CallbackQuery.Data, ":")
 	switch data[0] {
-	case subscribeEventsCallback:
+	case SubscribeEventsCallback:
 		h.SubscribeEventsCallback(ctx, b, update, data[1:])
-	case startCallback:
+	case StartCallback:
 		h.EditStart(ctx, b, update)
-	case chooseEventForBookingCallback:
-		h.ChooseEventCallback(ctx, b, update, chooseSlotCallback)
-	case chooseSlotCallback:
+	case ChooseEventForBookingCallback:
+		h.ChooseEventCallback(ctx, b, update, ChooseSlotCallback)
+	case ChooseSlotCallback:
 		h.chooseSlotCallback(ctx, b, update, parseChooseSlotCallback(data[1:]))
-	case reserveSlotCallback:
+	case ReserveSlotCallback:
 		h.reserveSlotCallback(ctx, b, update, parseReserveSlotCallback(data[1:]))
-	case bookingDataCallback:
+	case BookingDataCallback:
 		h.handleRegistration(ctx, b, update)
 	default:
 		slog.LogAttrs(ctx,
