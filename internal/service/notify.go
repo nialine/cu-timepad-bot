@@ -4,8 +4,10 @@ import (
 	"context"
 	"cu-timepad-bot/internal/adapters/timepad"
 	"cu-timepad-bot/internal/domain"
+	"cu-timepad-bot/internal/handler"
 	"cu-timepad-bot/internal/templates"
 	"log/slog"
+	"strconv"
 	"time"
 
 	"github.com/go-telegram/bot"
@@ -52,6 +54,11 @@ func (svc *Service) processNotifyPeople(ctx context.Context, b *bot.Bot, new_eve
 	for _, user := range users {
 		user := user
 		g.Go(func() error {
+			slog.LogAttrs(ctx,
+				slog.LevelDebug,
+				"Notifying",
+				slog.Int64("userid", user.ID),
+			)
 			return svc.sendNotification(gctx, b, user.ID, new_events)
 		})
 	}
@@ -72,10 +79,23 @@ func (svc *Service) sendNotification(ctx context.Context, b *bot.Bot, userid int
 		"time":      time.Now(),
 	}
 
-	b.SendMessage(ctx, &bot.SendMessageParams{
-		ChatID:    userid,
-		Text:      templates.Render("new_slots_notification", &templateData),
-		ParseMode: models.ParseModeHTML,
+	kb := models.InlineKeyboardMarkup{
+		InlineKeyboard: [][]models.InlineKeyboardButton{
+			{{
+				Text: templates.Render("open_event_button", &templateData),
+				URL:  new_events.Event.URL,
+			}},
+			{{
+				Text:         templates.Render("reserve_slot_button", &templateData),
+				CallbackData: handler.ChooseSlotCallback + ":" + strconv.FormatInt(new_events.Event.ID, 10),
+			}}},
+	}
+
+	_, err := b.SendMessage(ctx, &bot.SendMessageParams{
+		ChatID:      userid,
+		Text:        templates.Render("new_slots_notification", &templateData),
+		ReplyMarkup: kb,
+		ParseMode:   models.ParseModeHTML,
 	})
-	return nil
+	return err
 }

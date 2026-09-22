@@ -14,19 +14,19 @@ func makeKeyboardStart(templateData *map[string]any) *models.InlineKeyboardMarku
 			{
 				{
 					Text:         templates.Render("events_button", templateData),
-					CallbackData: subscribeEventsCallback,
+					CallbackData: SubscribeEventsCallback,
 				},
 			},
 			{
 				{
 					Text:         templates.Render("reserve_slot_button", templateData),
-					CallbackData: chooseEventForBookingCallback,
+					CallbackData: ChooseEventForBookingCallback,
 				},
 			},
 			{
 				{
 					Text:         templates.Render("booking_data", templateData),
-					CallbackData: bookingDataCallback,
+					CallbackData: BookingDataCallback,
 				},
 			},
 		},

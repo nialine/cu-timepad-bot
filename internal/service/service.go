@@ -67,7 +67,11 @@ func (svc *Service) HasRegistrationData(ctx context.Context, userid int64) bool 
 	return user.BookingUserData != nil
 }
 
-func (svc *Service) InRegistrationProcess(ctx context.Context, userid int64) bool {
+func (svc *Service) GetTempRegistration(ctx context.Context, userid int64) (*drafts.TempRegistrationDraft, error) {
+	return drafts.LoadTempBooking(ctx, svc.draftst, userid)
+}
+
+func (svc *Service) InRegistrationProcess(ctx context.Context, userid int64) domain.Status {
 	return drafts.HasBooking(ctx, svc.draftst, userid)
 }
 

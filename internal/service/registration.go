@@ -6,7 +6,6 @@ import (
 	"cu-timepad-bot/internal/config"
 	"cu-timepad-bot/internal/domain"
 	"cu-timepad-bot/internal/drafts"
-	"cu-timepad-bot/internal/templates"
 	"log/slog"
 	"slices"
 )
@@ -91,10 +90,11 @@ func (svc *Service) HandleRegistrationInput(ctx context.Context, userid int64, t
 	return draft.State, err
 }
 
-func (svc *Service) HandleTempBookingInput(ctx context.Context, userid int64, text string, data *domain.ChooseSlotData) (reply string, err error) {
+func (svc *Service) HandleTempBookingInput(ctx context.Context, userid int64, text string, data *domain.ChooseSlotData) (drafts.State, error) {
 	draft, err := drafts.LoadTempBooking(ctx, svc.draftst, userid)
-	if err != nil {
-		return "", err
+	if err != nil || draft.State == drafts.StateDone {
+		draft = &drafts.TempRegistrationDraft{}
+		drafts.SaveTempBooking(ctx, svc.draftst, userid, draft)
 	}
 
 	if data != nil {
@@ -107,14 +107,14 @@ func (svc *Service) HandleTempBookingInput(ctx context.Context, userid int64, te
 	case drafts.StateEmail:
 		if text != "" {
 			if !isEmailValid(text) {
-				return templates.Render("error_email", nil), nil
+				return draft.State, domain.ErrDataIsInvalid
 			}
 			draft.Email = text
 			draft.State = drafts.StateFirstName
 			drafts.SaveTempBooking(ctx, svc.draftst, userid, draft)
 			fall = true
 		} else {
-			return templates.Render("tempbookingdata_email", nil), nil
+			return draft.State, nil
 		}
 		fallthrough
 	case drafts.StateFirstName:
@@ -124,7 +124,7 @@ func (svc *Service) HandleTempBookingInput(ctx context.Context, userid int64, te
 			drafts.SaveTempBooking(ctx, svc.draftst, userid, draft)
 			fall = true
 		} else {
-			return templates.Render("tempbookingdata_firstname", nil), nil
+			return draft.State, nil
 		}
 		fallthrough
 	case drafts.StateLastName:
@@ -132,9 +132,9 @@ func (svc *Service) HandleTempBookingInput(ctx context.Context, userid int64, te
 			draft.LastName = text
 			draft.State = drafts.StateDone
 		} else {
-			return templates.Render("tempbookingdata_lastname", nil), nil
+			return draft.State, nil
 		}
 	}
-	svc.ReserveSlot(ctx, userid, draft.EventID, draft.SlotID, &draft.BookingUserData)
-	return templates.Render("reservedslotid", nil), nil
+	drafts.SaveTempBooking(ctx, svc.draftst, userid, draft)
+	return draft.State, nil
 }

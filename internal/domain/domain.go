@@ -15,6 +15,14 @@ var (
 	ErrDataIsInvalid     = errors.New("Data is invalid")
 )
 
+type Status int
+
+const (
+	StatusNone Status = iota
+	StatusRegistration
+	StatusTempRegistration
+)
+
 type User struct {
 	ID int64 `bson:"id,required"`
 

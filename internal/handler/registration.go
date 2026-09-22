@@ -16,7 +16,17 @@ func (h *Handler) handleRegistration(ctx context.Context, b *bot.Bot, update *mo
 	if update.CallbackQuery != nil {
 		message.Text = ""
 	}
-	state, err := h.svc.HandleRegistrationInput(ctx, message.Chat.ID, message.Text)
+	status := h.svc.InRegistrationProcess(ctx, message.Chat.ID)
+	var state drafts.State
+	var err error
+	switch status {
+	case domain.StatusNone:
+		fallthrough
+	case domain.StatusRegistration:
+		state, err = h.svc.HandleRegistrationInput(ctx, message.Chat.ID, message.Text)
+	case domain.StatusTempRegistration:
+		state, err = h.svc.HandleTempBookingInput(ctx, message.Chat.ID, message.Text, nil)
+	}
 	if state == drafts.StateEmail && err == domain.ErrDataIsInvalid {
 		b.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID:    message.Chat.ID,
@@ -45,40 +55,24 @@ func (h *Handler) handleRegistration(ctx context.Context, b *bot.Bot, update *mo
 			ParseMode: models.ParseModeHTML,
 		})
 	case drafts.StateDone:
-		kb := &models.InlineKeyboardMarkup{
-			InlineKeyboard: [][]models.InlineKeyboardButton{
-				{{
-					Text:         templates.Render("home_button", &templateData),
-					CallbackData: startCallback,
-				}},
-			},
+		if status == domain.StatusRegistration {
+			kb := &models.InlineKeyboardMarkup{
+				InlineKeyboard: [][]models.InlineKeyboardButton{
+					{{
+						Text:         templates.Render("home_button", &templateData),
+						CallbackData: StartCallback,
+					}},
+				},
+			}
+
+			b.SendMessage(ctx, &bot.SendMessageParams{
+				ChatID:      message.Chat.ID,
+				Text:        templates.Render("registration_done", &templateData),
+				ParseMode:   models.ParseModeHTML,
+				ReplyMarkup: kb,
+			})
+		} else {
+			h.reserveSlotCallback(ctx, b, update, nil)
 		}
-
-		b.SendMessage(ctx, &bot.SendMessageParams{
-			ChatID:      message.Chat.ID,
-			Text:        templates.Render("registration_done", &templateData),
-			ParseMode:   models.ParseModeHTML,
-			ReplyMarkup: kb,
-		})
 	}
-}
-
-func (h *Handler) handleTempRegistration(ctx context.Context, b *bot.Bot, update *models.Update) {
-	templateData := h.defaultData(update)
-	message := getMessage(update)
-	kb := &models.InlineKeyboardMarkup{
-		InlineKeyboard: [][]models.InlineKeyboardButton{
-			{{
-				Text:         templates.Render("home_button", &templateData),
-				CallbackData: startCallback,
-			}},
-		},
-	}
-
-	b.SendMessage(ctx, &bot.SendMessageParams{
-		ChatID:      message.Chat.ID,
-		Text:        templates.Render("tempregistration_notimplemented", &templateData),
-		ParseMode:   models.ParseModeHTML,
-		ReplyMarkup: kb,
-	})
 }

@@ -1,0 +1,1 @@
+{{template "day_of_week" .Slot.DayOfWeek}}, {{.Slot.DateH}}
