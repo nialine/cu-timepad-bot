@@ -23,16 +23,16 @@ func parseReserveSlotCallback(callbackData []string) *domain.ChooseSlotData {
 	return nil
 }
 
-func (h *Handler) editOrSendMessage(ctx context.Context, b *bot.Bot, message *models.Message, text string, kb *models.InlineKeyboardMarkup) {
+func (h *Handler) editOrSendMessage(ctx context.Context, b *bot.Bot, message *models.Message, text string, kb *models.InlineKeyboardMarkup) (*models.Message, error) {
 	if !message.From.IsBot {
-		b.SendMessage(ctx, &bot.SendMessageParams{
+		return b.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID:      message.Chat.ID,
 			Text:        text,
 			ReplyMarkup: kb,
 			ParseMode:   models.ParseModeHTML,
 		})
 	} else {
-		b.EditMessageText(ctx, &bot.EditMessageTextParams{
+		return b.EditMessageText(ctx, &bot.EditMessageTextParams{
 			ChatID:      message.Chat.ID,
 			MessageID:   message.ID,
 			Text:        text,
@@ -71,7 +71,7 @@ func (h *Handler) reserveSlotCallback(ctx context.Context, b *bot.Bot, update *m
 		CallbackData: StartCallback,
 	}}}}
 
-	h.editOrSendMessage(
+	message, _ = h.editOrSendMessage(
 		ctx, b, message,
 		templates.Render("waiting", &templateData),
 		nil,
