@@ -23,7 +23,7 @@ func parseReserveSlotCallback(callbackData []string) *domain.ChooseSlotData {
 	return nil
 }
 
-func (h *Handler) editOrSendMessage(ctx context.Context, b *bot.Bot, message *models.Message, text string, kb models.InlineKeyboardMarkup) {
+func (h *Handler) editOrSendMessage(ctx context.Context, b *bot.Bot, message *models.Message, text string, kb *models.InlineKeyboardMarkup) {
 	if !message.From.IsBot {
 		b.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID:      message.Chat.ID,
@@ -71,12 +71,18 @@ func (h *Handler) reserveSlotCallback(ctx context.Context, b *bot.Bot, update *m
 		CallbackData: StartCallback,
 	}}}}
 
+	h.editOrSendMessage(
+		ctx, b, message,
+		templates.Render("waiting", &templateData),
+		nil,
+	)
+
 	slot, err := h.svc.ReserveSlot(ctx, userid, data.EventID, data.SlotID, booking_data)
 	if err != nil {
 		h.editOrSendMessage(
 			ctx, b, message,
 			templates.Render("error_reserved_slot", &templateData),
-			kb,
+			&kb,
 		)
 		slog.LogAttrs(ctx,
 			slog.LevelError,
@@ -89,6 +95,6 @@ func (h *Handler) reserveSlotCallback(ctx context.Context, b *bot.Bot, update *m
 	h.editOrSendMessage(
 		ctx, b, message,
 		templates.Render("reserved_slot", &templateData),
-		kb,
+		&kb,
 	)
 }
